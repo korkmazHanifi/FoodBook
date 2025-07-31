@@ -14,6 +14,10 @@ class DetailPage : Fragment() {
 
     private val binding get() = _binding!!
 
+    private var NewOrOldControl: String?= null
+
+    private var FoodId: Int?= null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -30,6 +34,26 @@ class DetailPage : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        arguments?.let {
+             NewOrOldControl= DetailPageArgs.fromBundle(it).NewOrOldControl
+             FoodId= DetailPageArgs.fromBundle(it).FoodId
+        }
+
+        if (NewOrOldControl.equals("new")){
+            //Butona Tıklanma Durumu
+
+            binding.HeadText.text="AddFood"
+
+            //Buton Aktifliğini Ayarlama Kısmı
+            binding.DeleteButton.isEnabled= false
+            binding.SaveButton.isEnabled=true
+
+        }
+        else{
+            //Listedeki Elemana Tıklama Durumu
+            
+        }
 
     }
 

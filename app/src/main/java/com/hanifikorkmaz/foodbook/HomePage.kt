@@ -5,7 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.Navigation
 import com.hanifikorkmaz.foodbook.databinding.FragmentHomePageBinding
+import androidx.navigation.findNavController
 
 
 class HomePage : Fragment() {
@@ -33,6 +35,15 @@ class HomePage : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.floatingActionButton.setOnClickListener { NewFood(it) }
+
+    }
+
+    fun NewFood(view: View){
+
+        val action= HomePageDirections.actionHomePageToDetailPage("new",0)
+        view.findNavController().navigate(action)
 
     }
 

@@ -18,5 +18,12 @@
         android:id="@+id/detailPage"
         android:name="com.hanifikorkmaz.foodbook.DetailPage"
         android:label="fragment_detail_page"
-        tools:layout="@layout/fragment_detail_page" />
+        tools:layout="@layout/fragment_detail_page" >
+        <argument
+            android:name="NewOrOldControl"
+            app:argType="string" />
+        <argument
+            android:name="FoodId"
+            app:argType="integer" />
+    </fragment>
 </navigation>

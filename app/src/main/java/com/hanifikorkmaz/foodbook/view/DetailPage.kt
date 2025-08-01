@@ -21,6 +21,11 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.hanifikorkmaz.foodbook.databinding.FragmentDetailPageBinding
+import com.hanifikorkmaz.foodbook.model.Food
+import com.hanifikorkmaz.foodbook.roomdb.FoodDao
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import java.io.ByteArrayOutputStream
+import kotlin.math.max
 
 class DetailPage : Fragment() {
 
@@ -43,6 +48,7 @@ class DetailPage : Fragment() {
 
     //Uri'yi BitMap'e Dönüştürüp Resmi Değiştireceğiz.
     private var selectedBitMap: Bitmap?= null
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -217,12 +223,54 @@ class DetailPage : Fragment() {
 
     fun Save(view: View){
 
+        //İlk olarak kullanıcının girdiği değerleri alıyoruz.
+        val FoodName= binding.editTextText.text.toString()
+        val Recipe= binding.editTextText.text.toString()
 
+        //Görsel byte dizisi olarak almamız gerekiyor. Bunun nedeni Entity kısmında görseli ByteArray olarak aldık.
+
+        if(selectedBitMap != null){
+
+            //Bitmapi istediğimiz boyuta getirmek için yazdığımız fonksiyonu kullanuyoruz.
+            val smallBitmap= scaledDownBitmap(selectedBitMap!!,300)
+            val outputStream= ByteArrayOutputStream()
+            smallBitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream)
+            val byteArrayImage= outputStream.toByteArray()
+            
+        }
     }
 
     fun Delete(view: View){
 
 
+    }
+
+    //Resmin boyutunu küçültmek için oluşturulan fonksiyon.
+    fun scaledDownBitmap(selectedBitmap: Bitmap, maxSize: Int): Bitmap{
+
+        //İlk olarak güncel genişlik ve yüksekliği alıyoruz.
+        var width= selectedBitmap.width
+        var height= selectedBitmap.height
+
+        //Güncel Bitmap oranını alıyoruz.
+        val bitmapRatio= width.toDouble()/ height.toDouble()
+
+        //Görselimiz yatay mı dikey mi bunu anlamak için kontrol yapıyoruz.
+        if(bitmapRatio >= 1){
+            //Görsel Yatay
+            width= maxSize
+            val scaledHeight= width/bitmapRatio
+            height= scaledHeight.toInt()
+        }
+        else{
+            //Görsel Dikey
+            height=maxSize
+            val scaledWidht= height*bitmapRatio
+            width= scaledWidht.toInt()
+        }
+
+        //Son olarak bulduğumuz yeni değerleri fonksiyonda yerine yazıyoruz.
+        return Bitmap.createScaledBitmap(selectedBitmap,width,height,true)
     }
 
     override fun onDestroyView() {

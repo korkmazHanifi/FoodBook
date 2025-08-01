@@ -7,6 +7,8 @@ import androidx.room.Query
 import com.hanifikorkmaz.foodbook.model.Food
 
 
+
+
 @Dao
 interface FoodDao {
 

@@ -25,5 +25,8 @@
         <argument
             android:name="FoodId"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_detailPage_to_homePage"
+            app:destination="@id/homePage" />
     </fragment>
 </navigation>

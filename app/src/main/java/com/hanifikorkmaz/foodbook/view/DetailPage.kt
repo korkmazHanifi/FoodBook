@@ -19,13 +19,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.room.Room
 import com.google.android.material.snackbar.Snackbar
 import com.hanifikorkmaz.foodbook.databinding.FragmentDetailPageBinding
 import com.hanifikorkmaz.foodbook.model.Food
 import com.hanifikorkmaz.foodbook.roomdb.FoodDao
+import com.hanifikorkmaz.foodbook.roomdb.FoodDb
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.ByteArrayOutputStream
-import kotlin.math.max
+import androidx.navigation.findNavController
 
 class DetailPage : Fragment() {
 
@@ -49,11 +53,26 @@ class DetailPage : Fragment() {
     //Uri'yi BitMap'e Dönüştürüp Resmi Değiştireceğiz.
     private var selectedBitMap: Bitmap?= null
 
+    //Veritabanı
+    private lateinit var foodDb: FoodDb
+
+    //Sorgular İçin Dao Oluşturma
+    private lateinit var  foodDao: FoodDao
+
+    //Veritabanında yapılan sorgularda hafızayı düzenli kullanamak için kullanıyoruz.
+    private val mDisposable= CompositeDisposable()
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         registerLauncher()
+
+        //Veritabanını uyguluyoruz.
+        foodDb= Room.databaseBuilder(requireContext(),FoodDb::class.java,"FoodDataBase").build()
+
+        //Dao'yu uyguluyoruz
+        foodDao=foodDb.FoodDao()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -81,6 +100,8 @@ class DetailPage : Fragment() {
             binding.SaveButton.isEnabled=true
 
             binding.imageView.setOnClickListener { SelectImage(it) }
+
+            binding.SaveButton.setOnClickListener { Save(it) }
 
         }
         else{
@@ -231,13 +252,32 @@ class DetailPage : Fragment() {
 
         if(selectedBitMap != null){
 
-            //Bitmapi istediğimiz boyuta getirmek için yazdığımız fonksiyonu kullanuyoruz.
+            //Bitmapi istediğimiz boyuta getirmek için yazdığımız fonksiyonu kullanuyoruz ve Bitmapi Byte dizisine döndürüyoruz.
             val smallBitmap= scaledDownBitmap(selectedBitMap!!,300)
             val outputStream= ByteArrayOutputStream()
             smallBitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream)
             val byteArrayImage= outputStream.toByteArray()
-            
+
+            //Tabloya koyacağımız değerleri veriyoruz.
+            val Food= Food(FoodName,Recipe,byteArrayImage)
+
+
+            //RxJava Uygulanması(Kodlarımızın arkaplanda çalışmasını sağlıyoruz.)
+            mDisposable.add(
+                foodDao.insert(Food)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::HandleResponseForInsert))
+
         }
+    }
+
+    private fun HandleResponseForInsert(){
+        //İşlemin sonucunda ne yapılacağını ele alıyoruz.(Ana sayfaya geri dönmesini istiyoruz.)
+
+        val action= DetailPageDirections.actionDetailPageToHomePage()
+        requireView().findNavController().navigate(action)
+
     }
 
     fun Delete(view: View){

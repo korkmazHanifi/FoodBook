@@ -1,14 +1,12 @@
-package com.hanifikorkmaz.foodbook
+package com.hanifikorkmaz.foodbook.view
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.navigation.Navigation
-import com.hanifikorkmaz.foodbook.databinding.FragmentHomePageBinding
+import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
-
+import com.hanifikorkmaz.foodbook.databinding.FragmentHomePageBinding
 
 class HomePage : Fragment() {
 

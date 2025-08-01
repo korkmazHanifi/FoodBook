@@ -1,4 +1,4 @@
-package com.hanifikorkmaz.foodbook
+package com.hanifikorkmaz.foodbook.view
 
 import android.Manifest
 import android.content.Intent
@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,9 +18,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import com.hanifikorkmaz.foodbook.databinding.FragmentDetailPageBinding
-
 
 class DetailPage : Fragment() {
 
@@ -118,7 +117,8 @@ class DetailPage : Fragment() {
             else{
                 //İzin verilmiş, direk olarak galeriye git.
 
-                val intentToGallery= Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                val intentToGallery=
+                    Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 activityResultLauncher.launch(intentToGallery)
             }
 
@@ -135,7 +135,7 @@ class DetailPage : Fragment() {
 
                 if(ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)){
 
-                    //Burada tekrar izin isteme olayına yukarıdaki kodla Android karar ver eğer bu if true dönerse izini tekrar istemeliyiz.
+                    //Burada tekrar izin isteme olayına yukarıdaki kodla Android karar verir eğer bu if true dönerse izini tekrar istemeliyiz.
 
                     Snackbar.make(view, "Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission",
                         View.OnClickListener{
@@ -154,7 +154,8 @@ class DetailPage : Fragment() {
             else{
                 //İzin verilmiş, direk olarak galeriye git.
 
-                val intentToGallery= Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                val intentToGallery=
+                    Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 activityResultLauncher.launch(intentToGallery)
             }
 
@@ -163,13 +164,14 @@ class DetailPage : Fragment() {
 
     private fun registerLauncher(){
 
-        activityResultLauncher= registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
+        activityResultLauncher= registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
 
             //Kullanıcının galeriden resim seçip seçmediğini kontrol ediyoruz.
             if (result.resultCode== AppCompatActivity.RESULT_OK){
 
                 val intentFromResult= result.data
 
+                //Mekanik bir olay olduğundan seçilen resim boşta gelebilir bu yüzden kontrol ediyoruz.
                 if(intentFromResult != null){
 
                     selectedImage= intentFromResult.data  //Seçilen resmin yolunu verir.(dir/media/hanfi.png)
@@ -184,7 +186,7 @@ class DetailPage : Fragment() {
                             binding.imageView.setImageBitmap(selectedBitMap)
                         }
                         else{
-                            //28 altı versiyonlardauri, bitmap dönüşümü
+                            //28 altı versiyonlarda uri, bitmap dönüşümü
                             selectedBitMap= MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, selectedImage)
 
                             binding.imageView.setImageBitmap(selectedBitMap)
@@ -202,7 +204,8 @@ class DetailPage : Fragment() {
             if(result){
                 //İzin verildi, galeriye git.
 
-                val intentToGallery= Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                val intentToGallery=
+                    Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 activityResultLauncher.launch(intentToGallery)
             }
             else{

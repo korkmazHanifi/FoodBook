@@ -1,10 +1,11 @@
-package com.hanifikorkmaz.foodbook
+package com.hanifikorkmaz.foodbook.view
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.hanifikorkmaz.foodbook.R
 import com.hanifikorkmaz.foodbook.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {

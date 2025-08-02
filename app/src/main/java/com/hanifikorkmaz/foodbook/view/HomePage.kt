@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Room
+import com.hanifikorkmaz.foodbook.adapter.FoodAdapter
 import com.hanifikorkmaz.foodbook.databinding.FragmentHomePageBinding
 import com.hanifikorkmaz.foodbook.model.Food
 import com.hanifikorkmaz.foodbook.roomdb.FoodDao
@@ -30,21 +32,15 @@ class HomePage : Fragment() {
     //Veritabanında yapılan sorgularda hafıza düzeni için kullanıyoruz.
     private val mDisposable= CompositeDisposable()
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         //Tanımladığımız veritabanını uyguluyoruz.
         foodDb= Room.databaseBuilder(requireContext(), FoodDb::class.java,"FoodDataBase").build()
         foodDao= foodDb.FoodDao()
-
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         _binding = FragmentHomePageBinding.inflate(inflater, container, false)
         val view = binding.root
@@ -54,10 +50,9 @@ class HomePage : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.floatingActionButton.setOnClickListener { NewFood(it) }
+        binding.floatingActionButton.setOnClickListener { newFood(it) }
+        binding.foodRecycleView.layoutManager= LinearLayoutManager(requireContext())
         getAll()
-
-
     }
 
     //Veritabanından veri çekme işlemi
@@ -65,20 +60,15 @@ class HomePage : Fragment() {
         mDisposable.add(
             foodDao.getAll()
                 .subscribeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::HandleResponseForGetAll)
-        )
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::handleResponseForGetAll))
+    }
+    private fun handleResponseForGetAll(foodList: List<Food>){
+        val adapter= FoodAdapter(foodList)
+        binding.foodRecycleView.adapter=adapter
     }
 
-    private fun HandleResponseForGetAll(foodList: List<Food>){
-
-        foodList.forEach {
-            println(it.foodName)
-        }
-    }
-
-    fun NewFood(view: View){
-
+    fun newFood(view: View){
         val action= HomePageDirections.actionHomePageToDetailPage("new",0)
         view.findNavController().navigate(action)
 
@@ -86,7 +76,7 @@ class HomePage : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         _binding = null
+        mDisposable.clear()
     }
 }

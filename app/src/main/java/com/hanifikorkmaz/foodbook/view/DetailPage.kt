@@ -38,9 +38,9 @@ class DetailPage : Fragment() {
 
     private val binding get() = _binding!!
 
-    private var NewOrOldControl: String?= null
+    private var newOrOldControl: String?= null
 
-    private var FoodId: Int?= null
+    private var foodId: Int?= null
 
     //İzin İsteme Olayı İçin Oluşturulan Değişken
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
@@ -87,11 +87,11 @@ class DetailPage : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         arguments?.let {
-             NewOrOldControl= DetailPageArgs.fromBundle(it).NewOrOldControl
-             FoodId= DetailPageArgs.fromBundle(it).FoodId
+             newOrOldControl= DetailPageArgs.fromBundle(it).NewOrOldControl
+             foodId= DetailPageArgs.fromBundle(it).FoodId
         }
 
-        if (NewOrOldControl.equals("new")){
+        if (newOrOldControl.equals("new")){
             //Butona Tıklanma Durumu
 
             binding.HeadText.text="AddFood"
@@ -100,9 +100,9 @@ class DetailPage : Fragment() {
             binding.DeleteButton.isEnabled= false
             binding.SaveButton.isEnabled=true
 
-            binding.imageView.setOnClickListener { SelectImage(it) }
+            binding.imageView.setOnClickListener { selectImage(it) }
 
-            binding.SaveButton.setOnClickListener { Save(it) }
+            binding.SaveButton.setOnClickListener { save(it) }
 
         }
         else{
@@ -112,7 +112,7 @@ class DetailPage : Fragment() {
     }
 
     //Galeriden görsel seçmek için oluşturulan fonksiyon.
-    fun SelectImage(view: View){
+    fun selectImage(view: View){
 
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
@@ -128,14 +128,11 @@ class DetailPage : Fragment() {
 
                     //Burada tekrar izin isteme olayına yukarıdaki kodla Android karar ver eğer bu if true dönerse izini tekrar istemeliyiz.
 
-                    Snackbar.make(view, "Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission",
-                        View.OnClickListener{
+                    Snackbar.make(view, "Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission"){
 
                             //İzin İste
-
                             permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
-
-                        }).show()
+                    }.show()
                 }
                 else{
 
@@ -165,14 +162,12 @@ class DetailPage : Fragment() {
 
                     //Burada tekrar izin isteme olayına yukarıdaki kodla Android karar verir eğer bu if true dönerse izini tekrar istemeliyiz.
 
-                    Snackbar.make(view, "Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission",
-                        View.OnClickListener{
+                    Snackbar.make(view, "Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission"){
 
                             //İzin İste
-
                             permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
 
-                        }).show()
+                        }.show()
                 }
                 else{
 
@@ -243,7 +238,7 @@ class DetailPage : Fragment() {
         }
     }
 
-    fun Save(view: View){
+    fun save(view: View){
 
         //İlk olarak kullanıcının girdiği değerleri alıyoruz.
         val foodName= binding.editTextText.text.toString()
@@ -268,12 +263,12 @@ class DetailPage : Fragment() {
                 foodDao.insert(food)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::HandleResponseForInsert))
+                .subscribe(this::handleResponseForInsert))
 
         }
     }
 
-    private fun HandleResponseForInsert(){
+    private fun handleResponseForInsert(){
         //İşlemin sonucunda ne yapılacağını ele alıyoruz.(Ana sayfaya geri dönmesini istiyoruz.)
 
         val action= DetailPageDirections.actionDetailPageToHomePage()
@@ -284,7 +279,7 @@ class DetailPage : Fragment() {
 
     }
 
-    fun Delete(view: View){
+    fun delete(view: View){
 
 
     }

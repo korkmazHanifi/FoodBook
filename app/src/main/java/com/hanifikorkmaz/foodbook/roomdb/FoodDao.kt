@@ -27,6 +27,8 @@ interface FoodDao {
     //Yemek silmek için kullanılır.
     @Delete
     fun delete(food: Food): Completable
+
+
 }
 
 //Flowable: Eğer yazdığımız sorgu geriye bir değer döndürüyorsa Flowable kullanılır.

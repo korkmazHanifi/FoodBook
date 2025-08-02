@@ -30,6 +30,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.ByteArrayOutputStream
 import androidx.navigation.findNavController
+import androidx.core.graphics.scale
 
 class DetailPage : Fragment() {
 
@@ -59,7 +60,7 @@ class DetailPage : Fragment() {
     //Sorgular İçin Dao Oluşturma
     private lateinit var  foodDao: FoodDao
 
-    //Veritabanında yapılan sorgularda hafızayı düzenli kullanamak için kullanıyoruz.
+    //Veritabanında yapılan sorgularda hafıza düzeni için kullanıyoruz.
     private val mDisposable= CompositeDisposable()
 
 
@@ -245,8 +246,8 @@ class DetailPage : Fragment() {
     fun Save(view: View){
 
         //İlk olarak kullanıcının girdiği değerleri alıyoruz.
-        val FoodName= binding.editTextText.text.toString()
-        val Recipe= binding.editTextText.text.toString()
+        val foodName= binding.editTextText.text.toString()
+        val recipe= binding.editTextText2.text.toString()
 
         //Görsel byte dizisi olarak almamız gerekiyor. Bunun nedeni Entity kısmında görseli ByteArray olarak aldık.
 
@@ -259,12 +260,12 @@ class DetailPage : Fragment() {
             val byteArrayImage= outputStream.toByteArray()
 
             //Tabloya koyacağımız değerleri veriyoruz.
-            val Food= Food(FoodName,Recipe,byteArrayImage)
+            val food= Food(foodName,recipe,byteArrayImage)
 
 
             //RxJava Uygulanması(Kodlarımızın arkaplanda çalışmasını sağlıyoruz.)
             mDisposable.add(
-                foodDao.insert(Food)
+                foodDao.insert(food)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::HandleResponseForInsert))
@@ -277,6 +278,9 @@ class DetailPage : Fragment() {
 
         val action= DetailPageDirections.actionDetailPageToHomePage()
         requireView().findNavController().navigate(action)
+
+        //Kullanıcıya geri bildirim veririz.
+        Toast.makeText(requireContext(),"Food Saved", Toast.LENGTH_LONG).show()
 
     }
 
@@ -310,11 +314,13 @@ class DetailPage : Fragment() {
         }
 
         //Son olarak bulduğumuz yeni değerleri fonksiyonda yerine yazıyoruz.
-        return Bitmap.createScaledBitmap(selectedBitmap,width,height,true)
+        return selectedBitmap.scale(width, height)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        //Uygulama kapanırken verileri temizliyor.
+        mDisposable.clear()
     }
 }

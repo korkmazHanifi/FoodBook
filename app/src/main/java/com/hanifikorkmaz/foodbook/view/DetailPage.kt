@@ -32,6 +32,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.ByteArrayOutputStream
 import androidx.navigation.findNavController
 import androidx.core.graphics.scale
+import androidx.navigation.Navigation
 
 class DetailPage : Fragment() {
 
@@ -64,6 +65,8 @@ class DetailPage : Fragment() {
     //Veritabanında yapılan sorgularda hafıza düzeni için kullanıyoruz.
     private val mDisposable= CompositeDisposable()
 
+    //Secilen yemeği almak için kullandığımız değişken
+    private var selectedFood: Food?= null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,7 +94,6 @@ class DetailPage : Fragment() {
              newOrOldControl= DetailPageArgs.fromBundle(it).NewOrOldControl
              foodId= DetailPageArgs.fromBundle(it).FoodId
         }
-
         if (newOrOldControl.equals("new")){
             //Butona Tıklanma Durumu
 
@@ -108,18 +110,17 @@ class DetailPage : Fragment() {
         }
         else{
             //Listedeki Elemana Tıklama Durumu
-
             binding.SaveButton.isEnabled=false
             binding.DeleteButton.isEnabled=true
             binding.imageView.isEnabled=false
             getById()
 
+            //Sil butonuna basıldığında gerçekleşecek işlem
+            binding.DeleteButton.setOnClickListener { delete(it) }
         }
     }
-
     //Galeriden görsel seçmek için oluşturulan fonksiyon.
     fun selectImage(view: View){
-
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
             //READ_MEDIA_IMAGES(33 ve üzeri versiyonlarda galeriye gitmek için istenilecek olan izin)
@@ -152,8 +153,6 @@ class DetailPage : Fragment() {
                     Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 activityResultLauncher.launch(intentToGallery)
             }
-
-
         }
         else{
             //READ_EXTERNAL_STORAGE(33 altı versiyonlarda galeriye gitmek için istenilecek izin)
@@ -167,30 +166,24 @@ class DetailPage : Fragment() {
                 if(ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)){
 
                     //Burada tekrar izin isteme olayına yukarıdaki kodla Android karar verir eğer bu if true dönerse izini tekrar istemeliyiz.
-
                     Snackbar.make(view, "Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission"){
 
                             //İzin İste
                             permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-
-                        }.show()
+                    }.show()
                 }
                 else{
-
                     permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                 }
             }
             else{
                 //İzin verilmiş, direk olarak galeriye git.
-
                 val intentToGallery=
                     Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 activityResultLauncher.launch(intentToGallery)
             }
-
         }
     }
-
     private fun registerLauncher(){
 
         activityResultLauncher= registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
@@ -204,7 +197,6 @@ class DetailPage : Fragment() {
                 if(intentFromResult != null){
 
                     selectedImage= intentFromResult.data  //Seçilen resmin yolunu verir.(dir/media/hanfi.png)
-
                     try {
 
                         if (Build.VERSION.SDK_INT>=28) {
@@ -227,7 +219,6 @@ class DetailPage : Fragment() {
                 }
             }
         }
-
         permissionLauncher= registerForActivityResult(ActivityResultContracts.RequestPermission()){ result ->
 
             if(result){
@@ -243,7 +234,6 @@ class DetailPage : Fragment() {
             }
         }
     }
-
     fun save(view: View){
 
         //İlk olarak kullanıcının girdiği değerleri alıyoruz.
@@ -251,7 +241,6 @@ class DetailPage : Fragment() {
         val recipe= binding.editTextText2.text.toString()
 
         //Görsel byte dizisi olarak almamız gerekiyor. Bunun nedeni Entity kısmında görseli ByteArray olarak aldık.
-
         if(selectedBitMap != null){
 
             //Bitmapi istediğimiz boyuta getirmek için yazdığımız fonksiyonu kullanuyoruz ve Bitmapi Byte dizisine döndürüyoruz.
@@ -263,17 +252,14 @@ class DetailPage : Fragment() {
             //Tabloya koyacağımız değerleri veriyoruz.
             val food= Food(foodName,recipe,byteArrayImage)
 
-
             //RxJava Uygulanması(Kodlarımızın arkaplanda çalışmasını sağlıyoruz.)
             mDisposable.add(
                 foodDao.insert(food)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::handleResponseForInsert))
-
         }
     }
-
     private fun handleResponseForInsert(){
         //İşlemin sonucunda ne yapılacağını ele alıyoruz.(Ana sayfaya geri dönmesini istiyoruz.)
 
@@ -285,9 +271,25 @@ class DetailPage : Fragment() {
 
     }
 
+    //Veritabanından verileri silme işlemini gerçekleştirecek fonksiyon
     fun delete(view: View){
 
+        selectedFood?.let {
+            mDisposable.add(
+                foodDao.delete(selectedFood!!)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::handleResponseForDelete)
+            )
+        }
+    }
+    private fun handleResponseForDelete(){
+        //İşlemin sonucunda ne yapılacağını ele alıyoruz.(Ana sayfaya geri dönmesini istiyoruz.)
+        val action= DetailPageDirections.actionDetailPageToHomePage()
+        requireView().findNavController().navigate(action)
 
+        //Kullanıcıya geri bildirim veririz.
+        Toast.makeText(requireContext(),"Food Deleted", Toast.LENGTH_LONG).show()
     }
 
     //Id'e göre veri çekmek için oluşturulan fonksiyon.
@@ -300,15 +302,17 @@ class DetailPage : Fragment() {
                     .subscribe(this::handleResponseForGetById)
             )
     }
-
     private fun handleResponseForGetById(food: Food){
-        binding.HeadText.text= food.foodName
-        binding.editTextText.setText(food.foodName)
-        binding.editTextText2.setText(food.foodRecipe)
 
         //ByteArray şeklinde olan görselimiz tekrardan Bitmap'e çeviriyoruz.
         val bitMapImage= BitmapFactory.decodeByteArray(food.foodImage,0,food.foodImage!!.size)
         binding.imageView.setImageBitmap(bitMapImage)
+        binding.HeadText.text= food.foodName
+        binding.editTextText.setText(food.foodName)
+        binding.editTextText2.setText(food.foodRecipe)
+
+        //Secilen yemeği bu şekilde alabiliriz.
+        selectedFood=food
     }
 
     //Resmin boyutunu küçültmek için oluşturulan fonksiyon.

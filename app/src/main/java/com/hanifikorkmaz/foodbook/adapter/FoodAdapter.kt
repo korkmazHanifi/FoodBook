@@ -1,11 +1,12 @@
 package com.hanifikorkmaz.foodbook.adapter
 
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.hanifikorkmaz.foodbook.databinding.RecycleRowBinding
 import com.hanifikorkmaz.foodbook.model.Food
+import com.hanifikorkmaz.foodbook.view.HomePageDirections
+import androidx.navigation.findNavController
 
 class FoodAdapter(val foodList: List<Food>): RecyclerView.Adapter<FoodAdapter.FoodViewHolder>() {
 
@@ -30,15 +31,9 @@ class FoodAdapter(val foodList: List<Food>): RecyclerView.Adapter<FoodAdapter.Fo
         position: Int
     ) {
         holder.binding.textView3.text=foodList[position].foodName
-
-        val byteArrayImage = foodList[position].foodImage
-
-
-        //ByteArray olarak aldığımız görseli Bitmap' e çeviriyoruz.
-        val bitmapImage= BitmapFactory.decodeByteArray(byteArrayImage,0, byteArrayImage!!.size)
-        holder.binding.imageView2.setImageBitmap(bitmapImage)
-
-
-
+        holder.itemView.setOnClickListener {
+            val action= HomePageDirections.actionHomePageToDetailPage("old",foodList[position].uuid)
+            it.findNavController().navigate(action)
+        }
     }
 }

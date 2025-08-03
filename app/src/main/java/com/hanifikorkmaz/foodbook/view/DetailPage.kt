@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -107,6 +108,11 @@ class DetailPage : Fragment() {
         }
         else{
             //Listedeki Elemana Tıklama Durumu
+
+            binding.SaveButton.isEnabled=false
+            binding.DeleteButton.isEnabled=true
+            binding.imageView.isEnabled=false
+            getById()
 
         }
     }
@@ -282,6 +288,27 @@ class DetailPage : Fragment() {
     fun delete(view: View){
 
 
+    }
+
+    //Id'e göre veri çekmek için oluşturulan fonksiyon.
+    private fun getById(){
+
+            mDisposable.add(
+                foodDao.findById(foodId!!)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::handleResponseForGetById)
+            )
+    }
+
+    private fun handleResponseForGetById(food: Food){
+        binding.HeadText.text= food.foodName
+        binding.editTextText.setText(food.foodName)
+        binding.editTextText2.setText(food.foodRecipe)
+
+        //ByteArray şeklinde olan görselimiz tekrardan Bitmap'e çeviriyoruz.
+        val bitMapImage= BitmapFactory.decodeByteArray(food.foodImage,0,food.foodImage!!.size)
+        binding.imageView.setImageBitmap(bitMapImage)
     }
 
     //Resmin boyutunu küçültmek için oluşturulan fonksiyon.

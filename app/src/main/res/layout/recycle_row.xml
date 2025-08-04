@@ -18,6 +18,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="FoodName"
+        android:fontFamily="@font/coaster_rible"
         android:textColor="#837575"
         android:textSize="24sp"
         android:textStyle="bold" />

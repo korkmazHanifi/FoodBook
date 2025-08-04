@@ -66,4 +66,9 @@ dependencies {
 
     implementation ("androidx.room:room-rxjava3:$room_version")
     implementation ("io.reactivex.rxjava3:rxandroid:3.0.2")
+
+    val glide_version= "4.16.0"
+    implementation ("com.github.bumptech.glide:glide:$glide_version")
+    annotationProcessor ("com.github.bumptech.glide:compiler:$glide_version")
+
 }

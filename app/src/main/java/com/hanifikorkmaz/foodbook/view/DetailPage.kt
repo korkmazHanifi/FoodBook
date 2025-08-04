@@ -33,6 +33,8 @@ import java.io.ByteArrayOutputStream
 import androidx.navigation.findNavController
 import androidx.core.graphics.scale
 import androidx.navigation.Navigation
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 class DetailPage : Fragment() {
 
@@ -200,17 +202,24 @@ class DetailPage : Fragment() {
                     try {
 
                         if (Build.VERSION.SDK_INT>=28) {
-                            //28 üstü versiyonlarda uri, bitmap dönüşümü.
-                            val source = ImageDecoder.createSource(requireActivity().contentResolver, selectedImage!!)
-                            selectedBitMap = ImageDecoder.decodeBitmap(source)
+                            //Bunu atamamızın nedeni kontrol yaptığımızdan dolayı boş olması durumda hata veriyor.
+                            selectedBitMap= ImageDecoder.decodeBitmap(ImageDecoder.createSource(requireActivity().contentResolver, selectedImage!!))
 
-                            binding.imageView.setImageBitmap(selectedBitMap)
+                            //Glide yardımıyla direk uri formatındaki resmi köşesini yuvarlatıp kullanabiliyoruz.
+                            Glide.with(requireContext())
+                                .load(selectedImage)
+                                .transform(RoundedCorners(32))
+                                .into(binding.imageView)
                         }
                         else{
+
                             //28 altı versiyonlarda uri, bitmap dönüşümü
                             selectedBitMap= MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, selectedImage)
-
-                            binding.imageView.setImageBitmap(selectedBitMap)
+                            Glide.with(requireContext())
+                                .asBitmap()
+                                .load(selectedBitMap)
+                                .transform(RoundedCorners(32))
+                                .into(binding.imageView)
                         }
                     }
                     catch (e: Exception){
@@ -313,7 +322,14 @@ class DetailPage : Fragment() {
 
         //ByteArray şeklinde olan görselimiz tekrardan Bitmap'e çeviriyoruz.
         val bitMapImage= BitmapFactory.decodeByteArray(food.foodImage,0,food.foodImage!!.size)
-        binding.imageView.setImageBitmap(bitMapImage)
+
+        //Görselin köşelerini Glide ile yuvarlatıyoruz.
+        Glide.with(requireContext())
+            .asBitmap()
+            .load(bitMapImage)
+            .transform(RoundedCorners(32))
+            .into(binding.imageView)
+
         binding.HeadText.text= food.foodName
         binding.editTextText.setText(food.foodName)
         binding.editTextText2.setText(food.foodRecipe)

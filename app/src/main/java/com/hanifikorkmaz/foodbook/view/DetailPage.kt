@@ -240,25 +240,32 @@ class DetailPage : Fragment() {
         val foodName= binding.editTextText.text.toString()
         val recipe= binding.editTextText2.text.toString()
 
-        //Görsel byte dizisi olarak almamız gerekiyor. Bunun nedeni Entity kısmında görseli ByteArray olarak aldık.
-        if(selectedBitMap != null){
+            //Görsel byte dizisi olarak almamız gerekiyor. Bunun nedeni Entity kısmında görseli ByteArray olarak aldık.
+            if(selectedBitMap != null){
 
-            //Bitmapi istediğimiz boyuta getirmek için yazdığımız fonksiyonu kullanuyoruz ve Bitmapi Byte dizisine döndürüyoruz.
-            val smallBitmap= scaledDownBitmap(selectedBitMap!!,300)
-            val outputStream= ByteArrayOutputStream()
-            smallBitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream)
-            val byteArrayImage= outputStream.toByteArray()
+                //Bitmapi istediğimiz boyuta getirmek için yazdığımız fonksiyonu kullanuyoruz ve Bitmapi Byte dizisine döndürüyoruz.
+                val smallBitmap= scaledDownBitmap(selectedBitMap!!,300)
+                val outputStream= ByteArrayOutputStream()
+                smallBitmap.compress(Bitmap.CompressFormat.PNG, 50, outputStream)
+                val byteArrayImage= outputStream.toByteArray()
 
-            //Tabloya koyacağımız değerleri veriyoruz.
-            val food= Food(foodName,recipe,byteArrayImage)
-
-            //RxJava Uygulanması(Kodlarımızın arkaplanda çalışmasını sağlıyoruz.)
-            mDisposable.add(
-                foodDao.insert(food)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::handleResponseForInsert))
-        }
+                if(foodName.isNotEmpty() && recipe.isNotEmpty()){
+                    //Tabloya koyacağımız değerleri veriyoruz.
+                    val food= Food(foodName,recipe,byteArrayImage)
+                    //RxJava Uygulanması(Kodlarımızın arkaplanda çalışmasını sağlıyoruz.)
+                    mDisposable.add(
+                        foodDao.insert(food)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(this::handleResponseForInsert))
+                }
+                else{
+                    Toast.makeText(requireContext(),"Please Enter Food Name and Recipe", Toast.LENGTH_LONG).show()
+                }
+            }
+            else{
+                Toast.makeText(requireContext()," Please Select Image", Toast.LENGTH_LONG).show()
+            }
     }
     private fun handleResponseForInsert(){
         //İşlemin sonucunda ne yapılacağını ele alıyoruz.(Ana sayfaya geri dönmesini istiyoruz.)
